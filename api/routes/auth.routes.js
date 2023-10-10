@@ -4,6 +4,7 @@ import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import Jwt  from "jsonwebtoken";
 import * as dotenv from 'dotenv';
+import { verifyToken } from "../middleware/verifytoken.js";
 dotenv.config();
 const authRouter=express.Router();
 
@@ -71,6 +72,19 @@ try {
 } catch (error) {
     next(error);
 }
+})
+
+
+//sign out api
+
+authRouter.get('/signout',async(req,res,next)=>{
+   try {
+    res.clearCookie('access_token');
+    res.status(200).json("user logged out");
+   } catch (error) {
+    next(error);
+   }
+
 })
 
 
