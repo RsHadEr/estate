@@ -10,6 +10,7 @@ export default function Profile() {
   const dispatch=useDispatch();
   const fileRef=useRef(null);
   const [file,setFile]=useState(undefined);
+  const [showError,setShowError]=useState(false);
   const {currentUser,loading,error}=useSelector((state)=>state.user);
   useEffect(()=>{
    if(file)
@@ -19,6 +20,7 @@ export default function Profile() {
   },[file]);
   const [filePerc,setFilePerc]=useState(0);
   const [formData,setFormData]=useState({});
+  const [userListings,setUserListings]=useState([]);
   console.log(filePerc);
   console.log(formData);
 
@@ -94,7 +96,7 @@ export default function Profile() {
   const handleSignOut=async ()=>{
   try {
     dispatch(signOutUserStart());
-   const res=await fetch('api/auth/signout');
+   const res=await fetch('/api/auth/signout');
    const data=await res.json();
    if(data.success===false)
    {
@@ -104,6 +106,26 @@ export default function Profile() {
   } catch (error) {
     dispatch(signOutUserFailure(error.message));
   }
+  }
+
+
+  const handleShowListings =async ()=>{
+    try {
+      setShowError(false);
+      const res=await fetch(`/api/user/listings/${currentUser._id}`);
+      const data=await res.json();
+      if(data.success===false)
+      {
+        setShowError(data.message);
+        return;
+      }
+      setUserListings(data);
+      console.log(data);
+    } catch (error) {
+      console.log(error.message);
+      setShowError(error.message);
+    }
+
   }
   
   return (
@@ -128,6 +150,25 @@ export default function Profile() {
         <span onClick={handleSignOut} className='text-red-700 cursor-pointer'>Sign Out</span>
 
       </div>
+
+      <button type='button' onClick={handleShowListings} className='text-green-700 w-full'>Show Listings</button>
+       <p className='text-red-700'>{showError?showError:""}</p>
+
+       {
+        userListings&&userListings.length>0&& 
+        userListings.map((listing)=><div key={listing._id} className='border rounded-lg p-3 flex justify-between items-center gap-4'>
+          <Link to={`/listing/${listing._id}`}>
+            <img src={listing.imageUrls[0]} className='h-16 w-16 object-contain'/>
+          </Link>
+          <Link className='text-slate-700 font-semibold truncate flex-1' to={`/listing/${listing._id}`}>
+            <p>{listing.name}</p>
+          </Link>
+          <div className="flex flex-col item-center">
+            <button className='text-red-700'>Delete</button>
+            <button className='text-green-700'>Edit</button>
+          </div>
+        </div>)
+       }
 
       
     </div>
