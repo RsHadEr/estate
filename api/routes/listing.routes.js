@@ -69,6 +69,18 @@ try {
 
 })
 
+//getting a particular listing
+
+listingRouter.get('/get/:id',async (req,res,next)=>{
+    const listing=await Listing.findById(req.params.id);
+    if(!listing)
+{
+    return next(errorHandler(404,"No Listing found"));
+}
+res.status(200).json(listing);
+
+})
+
 
 
 
