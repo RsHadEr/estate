@@ -1,11 +1,13 @@
 import express from 'express';
 import { verifyToken } from '../middleware/verifytoken.js';
 import Listing from '../models/listing.models.js';
+import { errorHandler } from '../utils/error.js';
+
 
 
 const listingRouter=express.Router();
 
-
+//creating a listing
 listingRouter.post('/create',verifyToken,async(req,res,next)=>{
     try {
         const listing=await Listing.create(req.body);
@@ -15,6 +17,57 @@ listingRouter.post('/create',verifyToken,async(req,res,next)=>{
     }
 })
 
+//deleting a listing
+
+listingRouter.delete('/delete/:id',verifyToken,async(req,res,next)=>{
+const listing=await Listing.findById(req.params.id);
+if(!listing)
+{
+    return next(errorHandler(404,"No Listing found"));
+}
+
+if(req.user.id!==listing.userRef)
+{
+    return next(errorHandler(404,"You can delete only your listing"));
+}
+
+try {
+    await Listing.findByIdAndDelete(req.params.id);
+    res.status(200).json("Deleted");
+    
+} catch (error) {
+    next(error);
+}
+
+
+})
+
+
+
+
+//updating a listing
+
+listingRouter.post ('/update/:id',verifyToken, async (req,res,next)=>{
+const listing=await Listing.findById(req.params.id);
+if(!listing)
+{
+    return next(errorHandler(404,"No Listing found"));
+}
+
+if(req.user.id!==listing.userRef)
+{
+    return next(errorHandler(404,"You can update only your listing"));
+}
+
+try {
+    const updatedListing=await Listing.findByIdAndUpdate(req.params.id,req.body,{new:true});
+    res.status(200).json(updatedListing);
+
+} catch (error) {
+    next(error);
+}
+
+})
 
 
 
